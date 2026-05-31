@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Preis Tracker">
+<title>Preis Tracker — HF Trading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0ede8;
+    --border: rgba(0,0,0,0.1);
+    --border2: rgba(0,0,0,0.18);
+    --text: #1a1916;
+    --text2: #6b6860;
+    --text3: #a09e99;
+    --green: #1a7a56;
+    --green-bg: #e4f4ed;
+    --green-border: #7dcaa8;
+    --red: #a32d2d;
+    --red-bg: #fce8e8;
+    --amber: #7a5a1a;
+    --amber-bg: #fdf3dc;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); font-family: 'DM Sans', sans-serif; color: var(--text); }
+  body { padding-bottom: env(safe-area-inset-bottom); }
+
+  .app { max-width: 480px; margin: 0 auto; padding: 0 16px 32px; }
+
+  .header {
+    padding: 20px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-icon {
+    width: 36px; height: 36px;
+    background: var(--text);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .header-icon svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .header h1 { font-size: 17px; font-weight: 600; letter-spacing: -0.02em; }
+  .header p { font-size: 12px; color: var(--text2); margin-top: 1px; }
+
+  .section { margin-bottom: 16px; }
+  .section-label {
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--text3); margin-bottom: 8px;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 14px;
+  }
+
+  .field { margin-bottom: 12px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; font-weight: 500; }
+  .field input, .field select {
+    width: 100%; padding: 10px 12px;
+    font-size: 15px; font-family: 'DM Sans', sans-serif;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--text); }
+  .field input[type=password] { font-family: 'DM Mono', monospace; letter-spacing: 0.1em; }
+
+  .token-row { display: flex; gap: 8px; }
+  .token-row input { flex: 1; }
+  .btn-small {
+    padding: 10px 14px; font-size: 13px; font-weight: 500;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text);
+    cursor: pointer; white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.15s;
+  }
+  .btn-small:active { background: var(--border); }
+
+  .save-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+  .btn-save {
+    padding: 9px 16px; font-size: 13px; font-weight: 600;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--text);
+    color: #fff;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s;
+  }
+  .btn-save:active { opacity: 0.75; }
+  .saved-tag {
+    font-size: 12px; font-weight: 500;
+    background: var(--green-bg); color: var(--green);
+    border-radius: 6px; padding: 4px 10px;
+    display: none;
+  }
+
+  .photo-zone {
+    border: 2px dashed var(--border2);
+    border-radius: var(--radius);
+    min-height: 160px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 10px; cursor: pointer;
+    background: var(--surface2);
+    position: relative; overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .photo-zone:active { border-color: var(--text); }
+  .photo-zone svg { width: 36px; height: 36px; stroke: var(--text3); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+  .photo-zone span { font-size: 14px; color: var(--text2); font-weight: 500; }
+  .photo-zone small { font-size: 12px; color: var(--text3); }
+  .photo-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .preview-img { width: 100%; max-height: 220px; object-fit: cover; border-radius: var(--radius); display: none; }
+
+  .btn-analyze {
+    width: 100%; padding: 14px;
+    font-size: 15px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    border-radius: var(--radius);
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: background 0.15s;
+  }
+  .btn-analyze:active { background: var(--surface2); }
+  .btn-analyze:disabled { opacity: 0.4; cursor: default; }
+  .btn-analyze svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .result-card { display: none; }
+
+  .conf-tag {
+    display: inline-block; font-size: 11px; font-weight: 500;
+    border-radius: 5px; padding: 2px 7px; margin-top: 3px;
+  }
+  .conf-hoch { background: var(--green-bg); color: var(--green); }
+  .conf-mittel { background: var(--amber-bg); color: var(--amber); }
+  .conf-niedrig { background: var(--red-bg); color: var(--red); }
+
+  .aktion-row { display: flex; gap: 8px; }
+  .aktion-btn {
+    flex: 1; padding: 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text2);
+    font-size: 14px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .aktion-btn.active-ja { background: var(--green-bg); color: var(--green); border-color: var(--green-border); }
+  .aktion-btn.active-nein { background: var(--surface); color: var(--text); border-color: var(--border2); }
+
+  .btn-submit {
+    width: 100%; padding: 16px;
+    font-size: 16px; font-weight: 600;
+    font-family: 'DM Sans', sans-serif;
+    border-radius: var(--radius);
+    border: none;
+    background: var(--green);
+    color: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: opacity 0.15s;
+  }
+  .btn-submit:active { opacity: 0.8; }
+  .btn-submit:disabled { opacity: 0.45; cursor: default; }
+  .btn-submit svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  .status {
+    font-size: 14px; font-weight: 500;
+    padding: 12px 14px; border-radius: var(--radius-sm);
+    margin-top: 10px; display: none; text-align: center;
+  }
+  .status.ok { background: var(--green-bg); color: var(--green); }
+  .status.err { background: var(--red-bg); color: var(--red); }
+
+  .btn-reset {
+    width: 100%; padding: 12px;
+    font-size: 14px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer; margin-top: 10px;
+    transition: background 0.15s;
+  }
+  .btn-reset:active { background: var(--surface2); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+  .spinner {
+    display: inline-block; width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  .spinner-dark {
+    border-color: rgba(0,0,0,0.1);
+    border-top-color: var(--text2);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .field input[list] { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-icon">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    </div>
+    <div>
+      <h1>Preis Tracker</h1>
+      <p>HF Trading + Services</p>
+    </div>
+  </div>
+
+  <!-- Konfiguration -->
+  <div class="section" id="sectionConfig">
+    <div class="section-label">Einstellungen</div>
+    <div class="card">
+      <div class="field">
+        <label>Apps Script Web App URL</label>
+        <input type="url" id="webAppUrl" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label>Geheimer Token</label>
+        <div class="token-row">
+          <input type="password" id="secretToken" placeholder="dein-token" autocomplete="off" />
+          <button class="btn-small" onclick="toggleToken()" id="tokenToggleBtn">Zeigen</button>
+        </div>
+      </div>
+      <div class="save-row">
+        <button class="btn-save" onclick="saveConfig()">Speichern</button>
+        <span class="saved-tag" id="savedTag">✓ Gespeichert</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Foto -->
+  <div class="section">
+    <div class="section-label">1 — Foto</div>
+    <div class="photo-zone" id="photoZone">
+      <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      <span>Foto aufnehmen</span>
+      <small>Preisschild · Rechnung · Kassabon</small>
+      <input type="file" id="fileInput" accept="image/*" capture="environment" />
+    </div>
+    <img class="preview-img" id="previewImg" alt="Vorschau" />
+  </div>
+
+  <!-- Erkennen -->
+  <div class="section">
+    <button class="btn-analyze" id="analyzeBtn" disabled onclick="analyzeImage()">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <span>Felder automatisch erkennen</span>
+    </button>
+  </div>
+
+  <!-- Ergebnis -->
+  <div class="section result-card" id="resultCard">
+    <div class="section-label">2 — Felder prüfen &amp; eintragen</div>
+    <div class="card">
+      <div class="field">
+        <label>Artikel-ID</label>
+        <input type="text" id="fArtikelId" placeholder="z.B. BAC-07" list="artikelList" autocomplete="off" />
+        <datalist id="artikelList"></datalist>
+        <span class="conf-tag" id="confArtikelId"></span>
+      </div>
+      <div class="field">
+        <label>Anbieter</label>
+        <input type="text" id="fAnbieter" placeholder="z.B. Metro" list="anbieterList" autocomplete="off" />
+        <datalist id="anbieterList"></datalist>
+        <span class="conf-tag" id="confAnbieter"></span>
+      </div>
+      <div class="field">
+        <label>Preis (€) — Punkt als Dezimalzeichen</label>
+        <input type="text" id="fPreis" placeholder="z.B. 13.50" inputmode="decimal" />
+        <span class="conf-tag" id="confPreis"></span>
+      </div>
+      <div class="field">
+        <label>Aktion aktiv?</label>
+        <div class="aktion-row">
+          <button class="aktion-btn" id="btnJa" onclick="setAktion('Ja')">Ja</button>
+          <button class="aktion-btn active-nein" id="btnNein" onclick="setAktion('Nein')">Nein</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>Notiz (optional)</label>
+        <input type="text" id="fNotiz" placeholder="z.B. Sonderangebot KW22" />
+      </div>
+
+      <hr class="divider">
+
+      <button class="btn-submit" id="submitBtn" onclick="submitData()">
+        <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        <span>In Google Sheet eintragen</span>
+      </button>
+      <div class="status" id="statusMsg"></div>
+      <button class="btn-reset" onclick="resetApp()">Neues Foto aufnehmen</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const ARTIKEL_IDS = ['BAC-07','BAC-10','JAE-002','BLU-002','JD-07','JD-10','UWR-10','UTW-10','UWR-25','UTW-25','RB-025','SODA-KEG20'];
+const ANBIETER = ['Dr. Rieser Getränke','Schrottshammer Getränke','Billa und Billa plus','Spar','Getränkepool','Weisshaus','Transgourmet','Metro','Topdrinks','Murauer Brauerei','Brau Union'];
+
+let aktionWert = 'Nein';
+let imageBase64 = null;
+let imageMime = 'image/jpeg';
+
+function loadConfig() {
+  try {
+    document.getElementById('webAppUrl').value = localStorage.getItem('pt_url') || '';
+    document.getElementById('secretToken').value = localStorage.getItem('pt_token') || '';
+  } catch(e) {}
+}
+
+function saveConfig() {
+  try {
+    localStorage.setItem('pt_url', document.getElementById('webAppUrl').value.trim());
+    localStorage.setItem('pt_token', document.getElementById('secretToken').value.trim());
+    const tag = document.getElementById('savedTag');
+    tag.style.display = 'inline-block';
+    setTimeout(() => tag.style.display = 'none', 2500);
+  } catch(e) { alert('Speichern fehlgeschlagen: ' + e.message); }
+}
+
+function toggleToken() {
+  const inp = document.getElementById('secretToken');
+  const btn = document.getElementById('tokenToggleBtn');
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Verbergen'; }
+  else { inp.type = 'password'; btn.textContent = 'Zeigen'; }
+}
+
+function populateDataLists() {
+  const al = document.getElementById('artikelList');
+  ARTIKEL_IDS.forEach(id => { const o = document.createElement('option'); o.value = id; al.appendChild(o); });
+  const anl = document.getElementById('anbieterList');
+  ANBIETER.forEach(a => { const o = document.createElement('option'); o.value = a; anl.appendChild(o); });
+}
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  imageMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    imageBase64 = ev.target.result.split(',')[1];
+    const prev = document.getElementById('previewImg');
+    prev.src = ev.target.result;
+    prev.style.display = 'block';
+    document.getElementById('photoZone').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = false;
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('statusMsg').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+function setAktion(val) {
+  aktionWert = val;
+  document.getElementById('btnJa').className = val === 'Ja' ? 'aktion-btn active-ja' : 'aktion-btn';
+  document.getElementById('btnNein').className = val === 'Nein' ? 'aktion-btn active-nein' : 'aktion-btn';
+}
+
+function setConf(id, val) {
+  const el = document.getElementById(id);
+  if (!val) { el.textContent = ''; el.className = 'conf-tag'; return; }
+  const map = { hoch: ['conf-hoch', '✓ Hohe Sicherheit'], mittel: ['conf-mittel', '~ Bitte prüfen'], niedrig: ['conf-niedrig', '⚠ Bitte manuell prüfen'] };
+  const [cls, txt] = map[val] || ['', val];
+  el.textContent = txt; el.className = 'conf-tag ' + cls;
+}
+
+async function analyzeImage() {
+  if (!imageBase64) return;
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner spinner-dark"></span><span>Erkenne Felder...</span>';
+
+  const systemPrompt = `Du bist ein Preis-Erkennungs-Assistent für ein Getränke-Großhandels-System.
+Bekannte Artikel-IDs: ${ARTIKEL_IDS.join(', ')}
+Bekannte Anbieter: ${ANBIETER.join(', ')}
+Analysiere das Foto und extrahiere alle erkennbaren Preisdaten.
+Antworte NUR mit validem JSON ohne Markdown oder Backticks:
+{"artikelId":"","artikelName":"","anbieter":"","preis":"","aktion":"Nein","notiz":"","konfidenz":{"artikelId":"hoch/mittel/niedrig","anbieter":"hoch/mittel/niedrig","preis":"hoch/mittel/niedrig"}}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: imageMime, data: imageBase64 } },
+            { type: 'text', text: 'Bitte analysiere dieses Foto und extrahiere die Preisdaten.' }
+          ]
+        }]
+      })
+    });
+
+    if (!resp.ok) throw new Error('API Fehler ' + resp.status);
+    const data = await resp.json();
+    const raw = data.content?.find(b => b.type === 'text')?.text || '{}';
+    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    document.getElementById('fArtikelId').value = parsed.artikelId || '';
+    document.getElementById('fAnbieter').value = parsed.anbieter || '';
+    document.getElementById('fPreis').value = parsed.preis || '';
+    document.getElementById('fNotiz').value = parsed.notiz || '';
+    setAktion(parsed.aktion || 'Nein');
+
+    const k = parsed.konfidenz || {};
+    setConf('confArtikelId', k.artikelId);
+    setConf('confAnbieter', k.anbieter);
+    setConf('confPreis', k.preis);
+
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(err) {
+    showStatus('Fehler bei der Erkennung: ' + err.message, false);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Erneut erkennen</span>';
+}
+
+async function submitData() {
+  const url = document.getElementById('webAppUrl').value.trim();
+  const secret = document.getElementById('secretToken').value.trim();
+  if (!url) { showStatus('Bitte zuerst die Apps Script URL eintragen.', false); return; }
+  if (!secret) { showStatus('Bitte den geheimen Token eintragen.', false); return; }
+
+  const artikelId = document.getElementById('fArtikelId').value.trim();
+  const anbieter  = document.getElementById('fAnbieter').value.trim();
+  const preisRaw  = document.getElementById('fPreis').value.trim().replace(',', '.');
+  if (!artikelId || !anbieter || !preisRaw) { showStatus('Artikel-ID, Anbieter und Preis sind Pflichtfelder.', false); return; }
+  if (isNaN(parseFloat(preisRaw))) { showStatus('Preis muss eine Zahl sein (z.B. 13.50)', false); return; }
+
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span><span>Wird eingetragen...</span>';
+
+  try {
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret,
+        artikelId,
+        anbieter,
+        preis: parseFloat(preisRaw),
+        aktionAktiv: aktionWert,
+        notiz: document.getElementById('fNotiz').value.trim()
+      })
+    });
+    const result = await resp.json();
+    if (result.success) {
+      showStatus('✓ Erfolgreich gespeichert!', true);
+    } else {
+      showStatus('Fehler: ' + (result.error || 'Unbekannter Fehler'), false);
+    }
+  } catch(err) {
+    showStatus('Verbindungsfehler: ' + err.message, false);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg><span>In Google Sheet eintragen</span>';
+}
+
+function showStatus(msg, ok) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status ' + (ok ? 'ok' : 'err');
+  el.style.display = 'block';
+}
+
+function resetApp() {
+  imageBase64 = null;
+  document.getElementById('previewImg').style.display = 'none';
+  document.getElementById('previewImg').src = '';
+  document.getElementById('photoZone').style.display = 'flex';
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('analyzeBtn').innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg><span>Felder automatisch erkennen</span>';
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('statusMsg').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+  setAktion('Nein');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+loadConfig();
+populateDataLists();
+</script>
+</body>
+</html>
